@@ -12,9 +12,14 @@
 UCLASS()
 class JENGA_API AJengaGameMode : public AGameModeBase
 {
-	GENERATED_BODY()
-	
-	
-	
-	
+   GENERATED_BODY()
+
+public:
+   // Sets default values for this game mode's properties
+   AJengaGameMode();
+
+protected:
+   // Called when the game starts or when spawned
+   virtual void BeginPlay() override;
+
 };
