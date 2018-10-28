@@ -2,6 +2,7 @@
 
 #include "JengaGameMode.h"
 #include "JengaPawn.h"
+#include "JengaPlayerController.h"
 
 #include "Engine/World.h"
 #include <EngineGlobals.h>
@@ -12,6 +13,7 @@
 AJengaGameMode::AJengaGameMode()
 {
    DefaultPawnClass = AJengaPawn::StaticClass();
+   PlayerControllerClass = AJengaPlayerController::StaticClass();
 }
 
 

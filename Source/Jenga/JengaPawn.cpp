@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "JengaPawn.h"
-#include <Runtime/Engine/Classes/Engine/Engine.h>
+#include "GameFramework/PlayerController.h"
+#include "Components/PrimitiveComponent.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 #include <string>
 
@@ -33,37 +35,13 @@ AJengaPawn::AJengaPawn()
 void AJengaPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
-}
-
-///////////////////////////////////////////////////////////////////////////
-// Called every frame
-void AJengaPawn::Tick(float deltaTime)
-{
-	Super::Tick(deltaTime);
-
-   FVector pawnLocation = GetActorLocation();
-   pawnLocation.Z = FMath::Clamp(pawnLocation.Z + upAndDown, 0.0f, 255.0f);
-   SetActorLocation(pawnLocation);
-
-   if (navigationEnabled)
-   {
-      FRotator springArmRot = this->springArm->GetComponentRotation();
-      springArmRot.Yaw += cameraRot.X;
-      springArmRot.Pitch = FMath::Clamp(springArmRot.Pitch + cameraRot.Y, -60.0f, 0.0f);
-      this->springArm->SetWorldRotation(springArmRot);
-   }
-
-   float springArmLength = this->springArm->TargetArmLength;
-   springArmLength = FMath::Clamp(springArmLength - zoom, 150.0f, 350.0f);
-   this->springArm->TargetArmLength = springArmLength;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 // Called to bind functionality to input
 void AJengaPawn::SetupPlayerInputComponent(UInputComponent* inputComponent)
 {
-	Super::SetupPlayerInputComponent(inputComponent);
+   Super::SetupPlayerInputComponent(inputComponent);
 
    inputComponent->BindAction("EnableNavigation", IE_Pressed, this, &AJengaPawn::EnableNavigation);
    inputComponent->BindAction("EnableNavigation", IE_Released, this, &AJengaPawn::DisableNavigation);
@@ -75,4 +53,27 @@ void AJengaPawn::SetupPlayerInputComponent(UInputComponent* inputComponent)
    inputComponent->BindAxis("CameraPitch", this, &AJengaPawn::SetCameraPitch);
    inputComponent->BindAxis("Zoom", this, &AJengaPawn::SetZoom);
 
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Called every frame
+void AJengaPawn::Tick(float deltaTime)
+{
+	Super::Tick(deltaTime);
+
+   FVector pawnLocation = GetActorLocation();
+   pawnLocation.Z = FMath::Clamp(pawnLocation.Z + this->upAndDown, 0.0f, 255.0f);
+   SetActorLocation(pawnLocation);
+
+   if (navigationEnabled)
+   {
+      FRotator springArmRot = this->springArm->GetComponentRotation();
+      springArmRot.Yaw += this->cameraRot.X;
+      springArmRot.Pitch = FMath::Clamp(springArmRot.Pitch + this->cameraRot.Y, -60.0f, 0.0f);
+      this->springArm->SetWorldRotation(springArmRot);
+   }
+
+   float springArmLength = this->springArm->TargetArmLength;
+   springArmLength = FMath::Clamp(springArmLength - this->zoom, 150.0f, 500.0f);
+   this->springArm->TargetArmLength = springArmLength;
 }

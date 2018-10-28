@@ -9,6 +9,9 @@
 #include "Components/InputComponent.h"
 #include "JengaPawn.generated.h"
 
+/**
+*
+*/
 UCLASS()
 class JENGA_API AJengaPawn : public APawn
 {
@@ -18,18 +21,17 @@ public:
 	// Sets default values for this pawn's properties
 	AJengaPawn();
 
-   UPROPERTY(EditAnywhere) USpringArmComponent* springArm;
-
 protected:
-   // Called every frame
-   virtual void Tick(float DeltaTime) override;
+   // Called when the game starts or when spawned
+   virtual void BeginPlay() override;
 
    // Called to bind functionality to input
    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+   // Called every frame
+   virtual void Tick(float DeltaTime) override;
 
+private:
    // Control navigation
    void GoUp() { upAndDown += 1.0f; }
    void GoDown() { upAndDown -= 1.0f; }
@@ -40,6 +42,7 @@ protected:
    void SetZoom(float f) { zoom = f; }
 
 private:
+   USpringArmComponent * springArm;
    UCameraComponent* camera;
    FVector2D cameraRot;
    float upAndDown, zoom;

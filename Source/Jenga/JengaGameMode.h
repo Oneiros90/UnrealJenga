@@ -7,8 +7,8 @@
 #include "JengaGameMode.generated.h"
 
 /**
- * 
- */
+*
+*/
 UCLASS()
 class JENGA_API AJengaGameMode : public AGameModeBase
 {
