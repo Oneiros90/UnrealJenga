@@ -15,8 +15,9 @@ UCLASS()
 class JENGA_API AJengaPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-
-   // Sets default values for this pawn's properties
+      
+public:
+   // Constructor
    AJengaPlayerController();
 
 protected:

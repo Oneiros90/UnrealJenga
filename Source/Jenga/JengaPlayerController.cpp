@@ -24,6 +24,7 @@ const float RAY_LENGTH = 2000;
 AJengaPlayerController::AJengaPlayerController()
 {
    physicsHandle = nullptr;
+   bShowMouseCursor = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////

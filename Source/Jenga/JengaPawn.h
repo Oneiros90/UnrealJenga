@@ -18,7 +18,7 @@ class JENGA_API AJengaPawn : public APawn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
+   // Constructor
 	AJengaPawn();
 
 protected:

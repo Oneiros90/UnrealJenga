@@ -15,7 +15,7 @@ class JENGA_API AJengaGameMode : public AGameModeBase
    GENERATED_BODY()
 
 public:
-   // Sets default values for this game mode's properties
+   // Constructor
    AJengaGameMode();
 
 protected:
