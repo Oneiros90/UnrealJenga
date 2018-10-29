@@ -2,7 +2,6 @@
 
 #include "JengaPawn.h"
 #include "GameFramework/PlayerController.h"
-#include "Components/PrimitiveComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 #include <string>

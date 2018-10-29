@@ -18,8 +18,19 @@ public:
    // Constructor
    AJengaGameMode();
 
+   // Resets the blocks position
+   void NewTower();
+
 protected:
    // Called when the game starts or when spawned
    virtual void BeginPlay() override;
+
+   typedef TArray<FTransform> TowerConfiguration;
+
+   TowerConfiguration getActualTowerConfiguration();
+   void applyTowerConfiguration(TowerConfiguration towerConf);
+
+private:
+   TArray<TowerConfiguration> blocksMemory;
 
 };
