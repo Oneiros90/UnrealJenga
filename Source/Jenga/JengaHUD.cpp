@@ -46,7 +46,6 @@ void AJengaHUD::BeginPlay()
    getButton("RedoButton")->OnClicked.AddDynamic(this, &AJengaHUD::Redo);
 
    this->setNoOfPlayers(MIN_NO_OF_PLAYERS);
-   this->Restart();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -67,11 +66,8 @@ void AJengaHUD::RemoveOnePlayer()
 // Restarts the game
 void AJengaHUD::Restart()
 {
-   const FString noOfPlayersString = FString::FromInt(this->noOfPlayers);
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "Starting a game with " + noOfPlayersString + " player(s)!");
-
    AJengaGameMode* gameMode = (AJengaGameMode*)UGameplayStatics::GetGameMode(GetWorld());
-   gameMode->NewTower();
+   gameMode->NewGame(this->noOfPlayers);
 }
 
 ///////////////////////////////////////////////////////////////////////////

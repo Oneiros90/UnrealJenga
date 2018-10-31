@@ -1,8 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "JengaPlayerController.h"
+#include "JengaGameMode.h"
+
 #include "Components/PrimitiveComponent.h"
 #include "Runtime/Engine/Classes/Engine/Engine.h"
+#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/PhysicsEngine/PhysicsHandleComponent.h"
 #include "DrawDebugHelpers.h"
 
@@ -68,25 +71,33 @@ void AJengaPlayerController::DraggingStart(FVector2D screenPos)
    FVector worldPos, worldDir;
    DeprojectScreenPositionToWorld(screenPos.X, screenPos.Y, worldPos, worldDir);
 
-   // Ray-tracing to find a picked actor
+   // Ray-tracing to find a pickable actor
    this->lastPick.Reset();
    FVector rayStart = worldPos;
    FVector rayEnd = rayStart + worldDir * RAY_LENGTH;
    if (GetWorld()->LineTraceSingleByChannel(this->lastPick, rayStart, rayEnd, ECollisionChannel::ECC_Visibility))
    {
-      // Creating the handle
-      physicsHandle = NewObject<UPhysicsHandleComponent>(this, TEXT("PhysicsHandle"));
-      physicsHandle->GrabComponent(this->lastPick.GetComponent(), NAME_None, this->lastPick.ImpactPoint, false);
-      physicsHandle->SetTargetLocation(this->lastPick.ImpactPoint);
-      physicsHandle->RegisterComponent();
+      AActor* pickedActor = this->lastPick.GetComponent()->GetOwner();
+      if (pickedActor->Tags.Contains("Interactive"))
+      {
+         // Creating the handle
+         physicsHandle = NewObject<UPhysicsHandleComponent>(this, TEXT("PhysicsHandle"));
+         physicsHandle->GrabComponent(this->lastPick.GetComponent(), NAME_None, this->lastPick.ImpactPoint, false);
+         physicsHandle->SetTargetLocation(this->lastPick.ImpactPoint);
+         physicsHandle->RegisterComponent();
 
-      // Locking component rotations
-      lockRotations(*this->lastPick.GetComponent(), true);
+         // Locking component rotations
+         lockRotations(*this->lastPick.GetComponent(), true);
 
-#if defined(UE_EDITOR) || defined(UE_BUILD_DEBUG)
-      // Debug message on screen
-      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Picking ") + this->lastPick.GetComponent()->GetOwner()->GetName());
-#endif
+         // Updating the GameMode
+         AJengaGameMode* gameMode = (AJengaGameMode*)UGameplayStatics::GetGameMode(GetWorld());
+         gameMode->NewPick(pickedActor);
+      }
+      else
+      {
+         // Picking a not-interactive actor
+         this->lastPick.Reset();
+      }
    }
 }
 
@@ -111,6 +122,12 @@ void AJengaPlayerController::DraggingStop()
 {
    if (this->lastPick.GetComponent())
    {
+      AActor* pickedActor = this->lastPick.GetComponent()->GetOwner();
+
+      // Updating the GameMode
+      AJengaGameMode* gameMode = (AJengaGameMode*)UGameplayStatics::GetGameMode(GetWorld());
+      gameMode->PickReleased(pickedActor);
+
       lockRotations(*this->lastPick.GetComponent(), false);
       this->lastPick.Reset();
       physicsHandle->ReleaseComponent();
