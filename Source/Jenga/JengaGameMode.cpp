@@ -53,7 +53,7 @@ AJengaGameMode::AJengaGameMode()
 // Called when the game starts or when spawned
 void AJengaGameMode::BeginPlay()
 {
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Welcome to Jenga!"));
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, TEXT("Welcome to Jenga!"));
 
    // Get the array of blocks
    UGameplayStatics::GetAllActorsWithTag(GetWorld(), JENGA_BLOCK_TAG, this->jengaBlocks);
@@ -76,7 +76,6 @@ void AJengaGameMode::BeginPlay()
 void AJengaGameMode::NewGame(int nPlayers)
 {
    // Init game parameters
-   this->pickedJengaBlock = nullptr;
    this->turn = -1;
    this->moves = 0;
    this->nPlayers = nPlayers;
@@ -118,9 +117,8 @@ void AJengaGameMode::NewGame(int nPlayers)
 // Called to lock current's player block to this one
 void AJengaGameMode::NewPick(AActor* block)
 {
-#if defined(UE_EDITOR) || defined(UE_BUILD_DEBUG)
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Picking ") + block->GetName());
-#endif
+   FString playerStr = "Player " + FString::FromInt(CurrentPlayer() + 1);
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, playerStr + " picks " + block->GetName());
 
    // Save the picked block
    this->pickedJengaBlock = block;
@@ -175,7 +173,16 @@ void AJengaGameMode::PickReleased(AActor* block)
 // Goes back to the previous round
 void AJengaGameMode::Undo()
 {
-   if (this->turn >= 1)
+   if (this->towerStatus != TowerStatus::BALANCED)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Cannot undo: Tower is not balanced!");
+
+   else if (this->holdingPickedJengaBlock)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Cannot undo: You are holding a block!");
+
+   else if (this->turn < 1)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Cannot undo: This is the first turn!");
+
+   else
    {
       this->turn-=2;
       NextRound();
@@ -186,7 +193,16 @@ void AJengaGameMode::Undo()
 // Restores a canceled round
 void AJengaGameMode::Redo()
 {
-   if (this->turn + 1 <= this->moves)
+   if (this->towerStatus != TowerStatus::BALANCED)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Cannot redo: Tower is not balanced!");
+
+   else if (this->holdingPickedJengaBlock)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Cannot redo: You are holding a block!");
+
+   else if (this->turn + 1 > this->moves)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Cannot redo: No turns ahead!");
+
+   else
       NextRound();
 }
 
@@ -197,13 +213,11 @@ void AJengaGameMode::NextRound()
    this->turn++;
    this->moves = FMath::Max(this->turn, this->moves);
 
+   // Show debug message
+   FString debugStr = "Turn " + FString::FromInt(this->turn + 1);
    if (this->nPlayers > 1)
-   {
-      // Show message
-      FString turnStr = "Turn " + FString::FromInt(this->turn + 1);
-      FString playerStr = "Player " + FString::FromInt(CurrentPlayer() + 1);
-      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, turnStr + ": " + playerStr + " moves!");
-   }
+      debugStr += ": Player " + FString::FromInt(CurrentPlayer() + 1) + " moves!";
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, debugStr);
 
    // Do we already had this turn? (because of undos/redos)
    if (this->turn == -1)
@@ -230,6 +244,8 @@ void AJengaGameMode::NextRound()
 void AJengaGameMode::GameOver(FString msg)
 {
    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, msg);
+   FString playerStr = "Player " + FString::FromInt(CurrentPlayer() + 1);
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Game over for " + playerStr + "!");
 
    // Deactivate the picked block
    SetInteractive(this->pickedJengaBlock, false);

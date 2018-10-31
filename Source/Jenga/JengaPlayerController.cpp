@@ -110,7 +110,7 @@ void AJengaPlayerController::DraggingUpdate(FVector2D screenPos)
    FVector target = worldPos + worldDir * this->lastPick.Distance;
    physicsHandle->SetTargetLocation(target);
 
-#if defined(UE_EDITOR) || defined(UE_BUILD_DEBUG)
+#if defined(UE_BUILD_DEBUG)
    // Draw debug arrow
    DrawDebugDirectionalArrow(GetWorld(), this->lastPick.ImpactPoint, target, 10, FColor::Red, false, -1.0f, 0, 1.0f);
 #endif
