@@ -74,14 +74,16 @@ void AJengaHUD::Restart()
 // Undo last action
 void AJengaHUD::Undo()
 {
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "TODO!");
+   AJengaGameMode* gameMode = (AJengaGameMode*)UGameplayStatics::GetGameMode(GetWorld());
+   gameMode->Undo();
 }
 
 ///////////////////////////////////////////////////////////////////////////
 // Redo last action
 void AJengaHUD::Redo()
 {
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "TODO!");
+   AJengaGameMode* gameMode = (AJengaGameMode*)UGameplayStatics::GetGameMode(GetWorld());
+   gameMode->Redo();
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,9 @@ public:
    void NewPick(AActor* jengaBlock);
    void PickReleased(AActor* jengaBlock);
 
+   void Undo();
+   void Redo();
+
 protected:
    // Called when the game starts or when spawned
    virtual void BeginPlay() override;
@@ -53,9 +56,10 @@ protected:
 
 private:
    TArray<AActor*> jengaBlocks;
-   TArray<TowerConfiguration> blocksMemory;
+   TowerConfiguration defaultConfiguration, gameConfiguration;
+   TArray<TowerConfiguration> oldConfigurations;
 
-   int turn;
+   int turn, moves;
    int nPlayers;
    TSet<AActor*> jengaBlocksOnFloor;
 

@@ -59,7 +59,7 @@ void AJengaGameMode::BeginPlay()
    UGameplayStatics::GetAllActorsWithTag(GetWorld(), JENGA_BLOCK_TAG, this->jengaBlocks);
 
    // Save the initial blocks configuration
-   blocksMemory.Add(GetActualTowerConfiguration());
+   this->defaultConfiguration = GetActualTowerConfiguration();
 
    // Register floor collision event
    TArray<AActor*> floors;
@@ -78,12 +78,14 @@ void AJengaGameMode::NewGame(int nPlayers)
    // Init game parameters
    this->pickedJengaBlock = nullptr;
    this->turn = -1;
+   this->moves = 0;
    this->nPlayers = nPlayers;
    this->holdingPickedJengaBlock = false;
    this->towerStatus = TowerStatus::BALANCED;
 
-   // Load the first (pinpoint accurate) tower configuration
-   ApplyTowerConfiguration(blocksMemory[0]);
+   // Load the first (pinpoint accurate) tower configuration and clear the old ones
+   ApplyTowerConfiguration(this->defaultConfiguration);
+   this->oldConfigurations.Reset();
 
    // Save those blocks touching the floor (they should be 3)
    this->jengaBlocksOnFloor.Reset();
@@ -102,6 +104,7 @@ void AJengaGameMode::NewGame(int nPlayers)
       ));
       jengaBlock->SetActorTransform(trx);
    }
+   this->gameConfiguration = GetActualTowerConfiguration();
 
    // Game start message
    const FString noOfPlayersString = FString::FromInt(this->nPlayers);
@@ -169,16 +172,46 @@ void AJengaGameMode::PickReleased(AActor* block)
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// Goes back to the previous round
+void AJengaGameMode::Undo()
+{
+   if (this->turn >= 1)
+   {
+      this->turn-=2;
+      NextRound();
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Restores a canceled round
+void AJengaGameMode::Redo()
+{
+   if (this->turn + 1 <= this->moves)
+      NextRound();
+}
+
+///////////////////////////////////////////////////////////////////////////
 // Increases the turn counter number and initializes the next round
 void AJengaGameMode::NextRound()
 {
    this->turn++;
+   this->moves = FMath::Max(this->turn, this->moves);
+
    if (this->nPlayers > 1)
    {
       // Show message
-      FString player = "Player " + FString::FromInt(CurrentPlayer() + 1);
-      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, player + "'s turn!");
+      FString turnStr = "Turn " + FString::FromInt(this->turn + 1);
+      FString playerStr = "Player " + FString::FromInt(CurrentPlayer() + 1);
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, turnStr + ": " + playerStr + " moves!");
    }
+
+   // Do we already had this turn? (because of undos/redos)
+   if (this->turn == -1)
+      ApplyTowerConfiguration(this->gameConfiguration);
+   else if (this->turn < this->oldConfigurations.Num())
+      ApplyTowerConfiguration(this->oldConfigurations[this->turn]);
+   else
+      this->oldConfigurations.Add(GetActualTowerConfiguration());
 
    // Make sure all blocks are interactive (except the top ones!)
    for (const auto& jengaBlock : this->jengaBlocks)
