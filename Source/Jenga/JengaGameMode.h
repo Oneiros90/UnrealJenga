@@ -23,8 +23,8 @@ public:
    // Starts a new game
    void NewGame(int nPlayers);
 
-   void NewPick(AActor* block);
-   void PickReleased(AActor* block);
+   void NewPick(AActor* jengaBlock);
+   void PickReleased(AActor* jengaBlock);
 
 protected:
    // Called when the game starts or when spawned
@@ -32,15 +32,18 @@ protected:
    virtual void Tick(float deltaTime) override;
 
    void NextRound();
+   void GameOver(FString msg);
    int CurrentPlayer();
+   bool IsOnTop(AActor* jengaBlock);
+
+   void SetInteractive(AActor* jengaBlock, bool b);
+   bool IsInteractive(AActor* jengaBlock);
 
    typedef TArray<FTransform> TowerConfiguration;
+   TowerConfiguration GetActualTowerConfiguration();
+   void ApplyTowerConfiguration(TowerConfiguration towerConf);
 
-   TowerConfiguration getActualTowerConfiguration();
-   void applyTowerConfiguration(TowerConfiguration towerConf);
-
-
-   UFUNCTION() void onFloorHit(
+   UFUNCTION() void OnFloorHit(
       UPrimitiveComponent* hitComponent,
       AActor* otherActor,
       UPrimitiveComponent* otherComponent,
